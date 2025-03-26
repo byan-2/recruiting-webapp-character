@@ -27,8 +27,9 @@
 }
 
 .App-section {
+  display: flex;
   flex: 1 1 0;
-  background-color: hsl(220deg 13% 13%);
+  background-color: hsl(217, 11%, 15%);
   color: white;
 }
 

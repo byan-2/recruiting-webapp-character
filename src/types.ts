@@ -1,4 +1,4 @@
-export type Attributes = {
+export type Attribute = {
     Strength: number;
     Dexterity: number;
     Constitution: number;
@@ -8,3 +8,11 @@ export type Attributes = {
 };
 
 export type Class = "Barbarian" | "Wizard" | "Bard";
+
+export type Character = {
+    id: number;
+    attributes: Attribute;
+    skillPoints: Record<string, number>;
+    totalAttributePoints: number;
+    dc: number;
+};

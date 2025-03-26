@@ -1,4 +1,4 @@
-import type { Attributes, Class } from "./types";
+import type { Attribute, Class } from "./types";
 
 export const ATTRIBUTE_LIST = [
     'Strength',
@@ -9,7 +9,7 @@ export const ATTRIBUTE_LIST = [
     'Charisma',
 ];
 
-export const CLASS_LIST: Record<Class, Attributes> = {
+export const CLASS_LIST: Record<Class, Attribute> = {
     'Barbarian': {
         'Strength': 14,
         'Dexterity': 9,
