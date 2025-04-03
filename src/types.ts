@@ -13,6 +13,5 @@ export type Character = {
     id: number;
     attributes: Attribute;
     skillPoints: Record<string, number>;
-    totalAttributePoints: number;
     dc: number;
 };

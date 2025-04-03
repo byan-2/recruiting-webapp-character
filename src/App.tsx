@@ -1,34 +1,46 @@
 import './App.css';
-import { useState, useRef, useEffect } from 'react';
-import Characters, { CharactersHandle } from './components/Characters';
+import { useState, useEffect } from 'react';
+import Characters from './components/Characters';
 import { Character } from './types';
+import { ATTRIBUTE_LIST, SKILL_LIST } from './consts';
+
+const INITIAL_STAT = 10;
+
+const createDefaultCharacter = (id: number): Character => ({
+  id,
+  attributes: ATTRIBUTE_LIST.reduce((acc, attr) => {
+    acc[attr] = INITIAL_STAT;
+    return acc;
+  }, {} as any),
+  skillPoints: SKILL_LIST.reduce((acc, skill) => {
+    acc[skill.name] = 0;
+    return acc;
+  }, {} as Record<string, number>),
+  dc: 20
+});
 
 function App() {
-  const [characterIds, setCharacterIds] = useState<number[]>([1]);
-  const characterRefs = useRef<Map<number, CharactersHandle>>(new Map());
+  const [characters, setCharacters] = useState<Character[]>([createDefaultCharacter(1)]);
 
   const addCharacter = () => {
-    const newId = characterIds.length + 1;
-    setCharacterIds(prev => [...prev, newId]);
+    const newId = characters.length + 1;
+    setCharacters(prev => [...prev, createDefaultCharacter(newId)]);
+  };
+
+  const updateCharacter = (updated: Character) => {
+    setCharacters(prev =>
+      prev.map(c => (c.id === updated.id ? updated : c))
+    );
   };
 
   const handleSaveAll = async () => {
-    const savedStates: Character[] = [];
-    characterIds.forEach((id) => {
-      const ref = characterRefs.current.get(id);
-      if (ref && ref.exportState) {
-        savedStates.push(ref.exportState());
-      }
-    });
     try {
       const response = await fetch('https://recruiting.verylongdomaintotestwith.ca/api/{byan-2}/character', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(savedStates),
+        body: JSON.stringify(characters),
       });
-      if (!response.ok) {
-        throw new Error('Failed to save characters');
-      }
+      if (!response.ok) throw new Error('Failed to save characters');
       alert('Characters saved successfully.');
     } catch (err) {
       console.error(err);
@@ -39,21 +51,10 @@ function App() {
   const handleLoadAll = async () => {
     try {
       const response = await fetch('https://recruiting.verylongdomaintotestwith.ca/api/{byan-2}/character');
-      if (!response.ok) {
-        throw new Error('Failed to load characters');
-      }
-      const loadedStates = await response.json();
-      const sortedStates = loadedStates.body.sort((a: Character, b: Character) => a.id - b.id);
-      const loadedIds = sortedStates.map((state: Character) => state.id);
-      setCharacterIds(loadedIds);
-      setTimeout(() => {
-        sortedStates.forEach((state: Character) => {
-          const ref = characterRefs.current.get(state.id);
-          if (ref && ref.importState) {
-            ref.importState(state);
-          }
-        });
-      }, 0);
+      if (!response.ok) throw new Error('Failed to load characters');
+      const loaded = await response.json();
+      const sorted = loaded.body.sort((a: Character, b: Character) => a.id - b.id);
+      setCharacters(sorted);
     } catch (err) {
       console.error(err);
       alert('Error loading characters.');
@@ -71,17 +72,11 @@ function App() {
         <button onClick={addCharacter}>Add New Character</button>
         <button onClick={handleSaveAll}>Save All Characters</button>
       </header>
-      {characterIds.map(id => (
-        <section className="App-section" key={id}>
+      {characters.map(character => (
+        <section className="App-section" key={character.id}>
           <Characters
-            id={id}
-            ref={el => {
-              if (el) {
-                characterRefs.current.set(id, el);
-              } else {
-                characterRefs.current.delete(id);
-              }
-            }}
+            character={character}
+            onChange={updateCharacter}
           />
         </section>
       ))}
